@@ -111,11 +111,21 @@ Supported hosts: claude-desktop
 
 ### Behavior Notes
 
-- All phases (validate, write secrets, write TOML, rewrite host config) are all-or-nothing. Any failure means no changes are made.
-- A backup of the original host config is created before any modifications.
+- All inputs are validated before any writes begin. If a write phase fails after validation, the system may be in a partial state: secrets written to Keychain are idempotent (safe to overwrite on rerun), and the host config backup enables recovery. See "Recovery" below.
+- A backup of the original host config is created during validation, before any writes begin.
 - Each `--servers` value is matched as a literal host config entry name. No fuzzy matching or auto-discovery.
 - The original server `command` and `args` are preserved in the relay TOML server definition.
 - Secret vs non-secret classification is determined entirely by the compiled registry definition for that server.
+
+### Recovery
+
+If migration fails or is interrupted during write phases:
+
+- **Secrets already written to Keychain** are harmless — rerunning overwrites them with the same values.
+- **Partial relay TOML** must be deleted before rerunning.
+- **Host config** can be restored from the `.bak` backup if it was partially modified.
+
+The recovery procedure is always: restore host config from backup if needed, delete relay TOML if it exists, rerun the same `migrate` command.
 
 ---
 

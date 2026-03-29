@@ -146,7 +146,7 @@ MUST execute ordered phases:
 3. Write TOML
 4. Rewrite host config
 
-MUST be all-or-nothing over the specified server set.  
+MUST be effectively all-or-nothing over the specified server set: all inputs are validated before any writes begin, and secret writes are idempotent so a rerun after partial failure converges to the correct state.
 MUST treat each `--servers` argument as a literal host config entry name (no alias, fuzzy matching, command fingerprinting, or auto-discovery in MVP).  
 MUST fail if relay TOML already exists (**MVP-only policy; revisit post-MVP**).  
 MUST create and preserve a pre-migration backup.  
