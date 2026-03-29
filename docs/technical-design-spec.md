@@ -6,7 +6,7 @@ _March 2026 — Derived from MVP Architecture Contract (Revision 8) and Product 
 
 ## 1) Purpose
 
-This document defines the internal module boundaries, interfaces, data structures, and control flow for the MVP implementation. Every decision traces to the architecture contract (C-\*) and product spec (P-\*) via D-\* identifiers.
+This document defines the internal module boundaries, interfaces, data structures, and control flow for the MVP implementation. Every decision traces to the architecture contract (C-\*), product spec (P-\*), and/or design decisions doc via D-\* identifiers.
 
 ---
 
@@ -61,7 +61,7 @@ mcp-vault-wrap/
 | D-04 | Validate-first atomicity with idempotent secret writes | C-§4, C-§5 `migrate` |
 | D-05 | SecretBackend trait with authenticate/get/set/delete/exists | C-§4.1 |
 | D-06 | Separate `secret_env` and `env` maps in relay TOML | C-§4.3, C-§4.4 |
-| D-07 | Light host parser trait (parse + write) | C-§3, C-§13 |
+| D-07 | Light host parser trait (parse + write) | C-§3, C-§5 `migrate` |
 | D-08 | Static Rust data literals for compiled registry | C-§4, C-§7 |
 | D-09 | Injector trait with EnvInjector MVP implementation | Design Decisions §4 |
 | D-10 | Host-side handle seam for future sampling support | C-§4 sampling expansion seam |
@@ -160,7 +160,7 @@ pub struct HostServerEntry {
 
 `raw` preserves the full original JSON structure. `write()` updates only the `mcpServers` entries for migrated servers, leaving everything else untouched. This prevents migration from clobbering unrelated host config fields. [C-§5 `migrate`]
 
-**ClaudeDesktopConfig:** Reads `~/Library/Application Support/Claude/claude_desktop_config.json`. The path is derived from the `--host claude-desktop` flag, not hardcoded in the trait. [C-§3, P-§3]
+**ClaudeDesktopConfig:** Reads `~/Library/Application Support/Claude/claude_desktop_config.json`. The path is derived from the `--host claude-desktop` flag, not hardcoded in the trait. The trait exists to support multi-host expansion (deferred in C-§13) without rearchitecting migration. [C-§3, C-§5 `migrate`, P-§3]
 
 ---
 
@@ -328,6 +328,8 @@ Phase 1: Validate
   4. Verify relay TOML does not already exist at target path
      -> fail if exists
   5. Verify Keychain is accessible (backend.authenticate())
+  6. Create backup of host config: <original-path>.bak
+     -> fail if .bak already exists (do not overwrite a previous backup)
 
 Phase 2: Write secrets
   For each server, for each env var classified as Secret:
@@ -343,13 +345,11 @@ Phase 3: Write relay TOML
   3. Write to target path with permissions 600
 
 Phase 4: Rewrite host config
-  1. Create backup: <original-path>.bak
-     -> fail if .bak already exists (do not overwrite a previous backup)
-  2. For each migrated server, replace the host config entry:
+  1. For each migrated server, replace the host config entry:
      - command -> "mcp-vault-wrap"
      - args -> ["run", "<server-name>"]
      - env -> removed entirely (secrets are in Keychain, non-secrets are in TOML)
-  3. Write modified host config via HostConfig::write()
+  2. Write modified host config via HostConfig::write()
 ```
 
 **Dry-run mode:** Executes Phase 1 validation fully (including Keychain accessibility check). Phases 2-4 print what would happen in the format specified by P-§3 but write nothing. [C-§5 `migrate`, P-§3]
@@ -539,7 +539,7 @@ Full test plan is a separate artifact (§8.1 item 5). [C-§8.1]
 | D-04 Validate-first + idempotent writes | C-§4, C-§5 `migrate` | P-§3 Behavior Notes |
 | D-05 SecretBackend trait shape | C-§4.1 | — |
 | D-06 Separate secret_env / env maps | C-§4.3, C-§4.4 | P-§3 Success Output |
-| D-07 Light HostConfig trait | C-§3, C-§13 | P-§3 |
+| D-07 Light HostConfig trait | C-§3, C-§5 `migrate` | P-§3 |
 | D-08 Static registry data | C-§4, C-§7 | — |
 | D-09 Injector trait + EnvInjector | Design Decisions §4 | — |
 | D-10 Host-side handle seam | C-§4 sampling expansion seam | — |
