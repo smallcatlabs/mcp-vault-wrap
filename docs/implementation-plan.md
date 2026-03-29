@@ -49,8 +49,8 @@ Each milestone ends with a delivery checkpoint that defines what must be true be
 |----|------|-----------|------------|
 | I-01 | `cargo init`, workspace layout matching tech spec §2 module map | C-§8, Tech spec §2 | — |
 | I-02 | `clap` derive setup with all five subcommands (`run`, `add`, `remove`, `migrate`, `doctor`) as `todo!()` stubs; `--version`; `--config` flag on `run`, `migrate`, and `doctor` subcommands only | C-§5, P-§2 | I-01 |
-| I-03 | CI pipeline: build, test, `cargo fmt --check`, `cargo clippy`, `cargo audit` | Design Decisions §9 | I-01 |
-| I-04 | License files (MIT + Apache-2.0), `.gitignore`, `rust-toolchain.toml` | Design Decisions §9 | I-01 |
+| I-03 | CI pipeline: build, test, `cargo fmt --check`, `cargo clippy`, `cargo audit` | C-§8, Design Decisions §9 | I-01 |
+| I-04 | License files (MIT + Apache-2.0), `.gitignore`, `rust-toolchain.toml` | C-§8, Design Decisions §9 | I-01 |
 
 **Checkpoint:** `cargo build` succeeds. All five subcommands parse and hit `todo!()`. CI passes green.
 
@@ -172,11 +172,11 @@ Each milestone ends with a delivery checkpoint that defines what must be true be
 |----|------|-----------|------------|
 | I-40 | Manual macOS smoke test: `add` → `run` → relay traffic with a real MCP server (GitHub or Slack), real Keychain | C-§10, C-§11 Behavior Gates | I-08, I-21, I-14 |
 | I-41 | Manual macOS smoke test: `migrate` end-to-end on a real Claude Desktop config, verify host launches `mcp-vault-wrap run` correctly | C-§11 Behavior Gates | I-40 |
-| I-42 | `cargo audit` clean, dependency pins verified, `Cargo.lock` committed | Design Decisions §9 | I-01 |
+| I-42 | `cargo audit` clean, dependency pins verified, `Cargo.lock` committed | C-§8, Design Decisions §9 | I-01 |
 | I-43 | Security model section in repo docs matching C-§6 claims verbatim | C-§6 | — |
-| I-44 | Signed git tags for release | Design Decisions §9 | — |
-| I-45 | SBOM generation (`cargo-sbom` or equivalent) | Design Decisions §9 | I-42 |
-| I-46 | Binary checksums and release artifact process | Design Decisions §9 | I-42 |
+| I-44 | Signed git tags for release | C-§8, Design Decisions §9 | — |
+| I-45 | SBOM generation (`cargo-sbom` or equivalent) | C-§8, Design Decisions §9 | I-42 |
+| I-46 | Binary checksums and release artifact process | C-§8, Design Decisions §9 | I-42 |
 
 **Checkpoint:**
 - Real Keychain path works on macOS for full `add` → `run` → relay flow
@@ -192,10 +192,12 @@ Each milestone ends with a delivery checkpoint that defines what must be true be
 This graph shows primary dependency chains. The task tables in §3 are the authoritative dependency source; edges omitted here for readability (e.g., I-06 → I-21, I-09 → I-30) are still real dependencies.
 
 ```
-I-01 ──┬── I-02 ──┬── I-14 ─┬── I-16 ── I-17           (M3: add/remove)
-       │          │  I-15 ─┘
+I-01 ──┬── I-02 ──┬── I-14 ─┬── I-16                    (M3: add/remove)
+       │          │  I-15 ─┤
+       │          │         └── I-17
        │          │
-       │          └── I-37 ── I-38 ── I-39               (M6: doctor)
+       │          └── I-37 ──┬── I-38                    (M6: doctor)
+       │                     └── I-39
        │
        ├── I-03, I-04                                     (M1: CI, licenses)
        │
@@ -203,7 +205,7 @@ I-01 ──┬── I-02 ──┬── I-14 ─┬── I-16 ── I-17    
        │          ├── I-14, I-15
        │          └── I-30
        │
-       ├── I-06 ──┬── I-07 ──┬── I-17, I-26, I-27, I-36, I-39
+       ├── I-06 ──┬── I-07 ──┬── I-17, I-26, I-36, I-39
        │          │          │
        │          └── I-08 ── I-40
        │
@@ -225,11 +227,11 @@ I-01 ──┬── I-02 ──┬── I-14 ─┬── I-16 ── I-17    
                                                   │
                                           ═══ GATE ═══
                                                   │
-                                   I-28 ── I-29 ── I-30    (M5: migrate)
+                                   I-28 ── I-29 ── I-30          (M5: migrate)
                                                      │
-                                        I-31, I-32, I-33
+                                        I-31, I-32, I-33, I-35
                                                      │
-                                             I-34, I-35
+                                                    I-34
                                                      │
                                                     I-36
 
@@ -238,6 +240,8 @@ I-42 ──┬── I-45
        └── I-46                                           (M7: release)
 I-43, I-44                                                (M7: docs, tags)
 ```
+
+Note on M5 graph: I-31, I-32, I-33, and I-35 all depend on I-30 directly (parallel). I-34 depends on I-31, I-32, and I-33 (not I-35). I-36 depends on I-30 through I-35. The vertical layout shows the convergence toward I-36, not a linear chain.
 
 ---
 
