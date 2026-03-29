@@ -1,0 +1,12 @@
+[package]
+name = "mcp-vault-wrap"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Move MCP credentials from plaintext config into macOS Keychain and relay MCP traffic transparently"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
