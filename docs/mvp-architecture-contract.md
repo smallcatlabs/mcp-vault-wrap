@@ -1,6 +1,6 @@
 # mcp-vault-wrap MVP Architecture Contract
 
-_Revision 8, March 2026_
+_Revision 9, March 2026_
 
 ---
 
@@ -263,7 +263,7 @@ To minimize drift and rework, use requirement IDs.
 
 - Every `P-*` MUST map to at least one `C-*`.
 - Every `D-*` MUST map to at least one `P-*` and one `C-*`.
-- Every `I-*` MUST map to at least one `D-*`.
+- Every `I-*` that implements functional behavior MUST map to at least one `D-*`. Infrastructure, release, and test-evidence tasks MUST trace to at least one `C-*` or `P-*`.
 - Every `T-*` MUST map to behavior evidence for at least one `C-*` or `P-*`.
 
 ---
