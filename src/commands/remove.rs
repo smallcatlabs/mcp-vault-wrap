@@ -106,8 +106,14 @@ mod tests {
         let backend = InMemoryBackend::new();
         let (result, _) = run_remove(&backend, "../etc", "TOKEN");
         let err = result.unwrap_err();
-        assert!(err.contains("Invalid profile name: \"../etc\""), "got: {err}");
-        assert!(err.contains("Names must match [a-zA-Z0-9_.-]"), "got: {err}");
+        assert!(
+            err.contains("Invalid profile name: \"../etc\""),
+            "got: {err}"
+        );
+        assert!(
+            err.contains("Names must match [a-zA-Z0-9_.-]"),
+            "got: {err}"
+        );
     }
 
     #[test]
@@ -115,8 +121,14 @@ mod tests {
         let backend = InMemoryBackend::new();
         let (result, _) = run_remove(&backend, "default", "MY KEY");
         let err = result.unwrap_err();
-        assert!(err.contains("Invalid secret name: \"MY KEY\""), "got: {err}");
-        assert!(err.contains("Names must match [a-zA-Z0-9_.-]"), "got: {err}");
+        assert!(
+            err.contains("Invalid secret name: \"MY KEY\""),
+            "got: {err}"
+        );
+        assert!(
+            err.contains("Names must match [a-zA-Z0-9_.-]"),
+            "got: {err}"
+        );
     }
 
     #[test]
@@ -124,18 +136,17 @@ mod tests {
         let backend = InMemoryBackend::new();
         backend.set("work", "TOKEN", "val").unwrap();
         let (result, _) = run_remove(&backend, "default", "TOKEN");
-        assert!(result.is_err(), "should not find token in different profile");
+        assert!(
+            result.is_err(),
+            "should not find token in different profile"
+        );
         // Original still exists
         assert!(backend.exists("work", "TOKEN").unwrap());
     }
 }
 
 /// Entry point called from main with real stdout.
-pub fn run(
-    backend: &dyn SecretBackend,
-    profile: &str,
-    secret_name: &str,
-) -> Result<(), String> {
+pub fn run(backend: &dyn SecretBackend, profile: &str, secret_name: &str) -> Result<(), String> {
     let mut output = io::stdout();
     execute(backend, profile, secret_name, &mut output)
 }

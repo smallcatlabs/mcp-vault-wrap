@@ -88,8 +88,7 @@ pub fn execute(
 fn read_secret(secret_name: &str) -> Result<String, String> {
     if io::stdin().is_terminal() {
         eprint!("Enter secret value for {secret_name}: ");
-        rpassword::read_password()
-            .map_err(|e| format!("Error: Failed to read secret value: {e}"))
+        rpassword::read_password().map_err(|e| format!("Error: Failed to read secret value: {e}"))
     } else {
         let mut value = String::new();
         io::stdin()
@@ -161,10 +160,7 @@ mod tests {
         let (result, output) = run_add(&backend, "default", "GITHUB_TOKEN", true, "new_value");
         assert!(result.is_ok());
         assert_eq!(output, "Updated: mcp-vault-wrap.default.GITHUB_TOKEN\n");
-        assert_eq!(
-            backend.get("default", "GITHUB_TOKEN").unwrap(),
-            "new_value"
-        );
+        assert_eq!(backend.get("default", "GITHUB_TOKEN").unwrap(), "new_value");
     }
 
     #[test]
