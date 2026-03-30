@@ -1,7 +1,8 @@
-// TODO: Remove once modules are wired into command implementations.
+// TODO: Remove once all modules are wired into command implementations.
 #![allow(dead_code)]
 
 mod cli;
+mod commands;
 mod config;
 mod host;
 mod inject;
@@ -12,8 +13,22 @@ mod secret;
 mod transport;
 mod validate;
 
+use std::process;
+
 use clap::Parser;
 use cli::{Cli, Commands};
+
+fn create_backend() -> Box<dyn secret::SecretBackend> {
+    #[cfg(target_os = "macos")]
+    {
+        Box::new(secret::keychain::KeychainBackend)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        eprintln!("Error: mcp-vault-wrap requires macOS Keychain. This platform is not supported.");
+        process::exit(1);
+    }
+}
 
 fn main() {
     let cli = Cli::parse();
@@ -27,17 +42,25 @@ fn main() {
             todo!("run command")
         }
         Commands::Add {
-            profile: _,
-            secret_name: _,
-            force: _,
+            profile,
+            secret_name,
+            force,
         } => {
-            todo!("add command")
+            let backend = create_backend();
+            if let Err(e) = commands::add::run(&*backend, &profile, &secret_name, force) {
+                eprintln!("{e}");
+                process::exit(1);
+            }
         }
         Commands::Remove {
-            profile: _,
-            secret_name: _,
+            profile,
+            secret_name,
         } => {
-            todo!("remove command")
+            let backend = create_backend();
+            if let Err(e) = commands::remove::run(&*backend, &profile, &secret_name) {
+                eprintln!("{e}");
+                process::exit(1);
+            }
         }
         Commands::Migrate {
             host: _,

@@ -8,6 +8,7 @@ description = "Move MCP credentials from plaintext config into macOS Keychain an
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+rpassword = "5"
 toml = "0.8"
 [target.'cfg(target_os = "macos")'.dependencies]
 security-framework = "3"
