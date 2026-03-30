@@ -57,7 +57,7 @@ pub enum Commands {
         host: String,
 
         /// Comma-separated list of server names to migrate
-        #[arg(long, value_delimiter = ',')]
+        #[arg(long, value_delimiter = ',', required = true)]
         servers: Vec<String>,
 
         /// Preview changes without writing anything

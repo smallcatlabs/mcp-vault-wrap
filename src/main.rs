@@ -66,12 +66,18 @@ async fn main() {
             }
         }
         Commands::Migrate {
-            host: _,
-            servers: _,
-            dry_run: _,
-            config: _,
+            host,
+            servers,
+            dry_run,
+            config,
         } => {
-            todo!("migrate command")
+            let backend = create_backend();
+            if let Err(e) =
+                mcp_vault_wrap::migrate::run(&host, &servers, config.as_deref(), &*backend, dry_run)
+            {
+                eprintln!("{e}");
+                process::exit(1);
+            }
         }
         Commands::Doctor { config: _ } => {
             todo!("doctor command")

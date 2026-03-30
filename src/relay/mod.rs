@@ -185,13 +185,13 @@ mod tests {
         }
     }
 
-    fn make_host(
-        incoming: Vec<Result<Vec<u8>, TransportError>>,
-    ) -> (
+    type HostFixture = (
         MockReader,
         Arc<Mutex<dyn TransportSender>>,
         Arc<Mutex<Vec<Vec<u8>>>>,
-    ) {
+    );
+
+    fn make_host(incoming: Vec<Result<Vec<u8>, TransportError>>) -> HostFixture {
         let sent = Arc::new(Mutex::new(Vec::new()));
         let reader = MockReader::new(incoming);
         let writer: Arc<Mutex<dyn TransportSender>> =
