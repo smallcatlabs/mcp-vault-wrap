@@ -79,8 +79,19 @@ async fn main() {
                 process::exit(1);
             }
         }
-        Commands::Doctor { config: _ } => {
-            todo!("doctor command")
+        Commands::Doctor { config } => {
+            let backend = create_backend();
+            match commands::doctor::run(&*backend, config.as_deref()) {
+                Ok(all_passed) => {
+                    if !all_passed {
+                        process::exit(1);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("{e}");
+                    process::exit(1);
+                }
+            }
         }
     }
 }
