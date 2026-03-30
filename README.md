@@ -40,7 +40,7 @@ mcp-vault-wrap does one thing: it gets your secrets out of plaintext files and i
 
 ## Project Status
 
-Pre-release. The MVP architecture is defined and design documentation is complete. Implementation has not begun. See [docs/](docs/) for the full design.
+Pre-release. Implementation is in progress toward MVP. Design documentation is complete — see [docs/](docs/) for the architecture contract, product spec, design decisions, technical design spec, and implementation plan.
 
 ## License
 

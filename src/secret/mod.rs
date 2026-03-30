@@ -1,3 +1,5 @@
+#[cfg(target_os = "macos")]
+pub mod keychain;
 pub mod memory;
 
 use std::fmt;
