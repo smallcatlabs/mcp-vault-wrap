@@ -65,6 +65,12 @@ pub fn execute(
     Ok(())
 }
 
+/// Entry point called from main with real stdout.
+pub fn run(backend: &dyn SecretBackend, profile: &str, secret_name: &str) -> Result<(), String> {
+    let mut output = io::stdout();
+    execute(backend, profile, secret_name, &mut output)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -143,10 +149,4 @@ mod tests {
         // Original still exists
         assert!(backend.exists("work", "TOKEN").unwrap());
     }
-}
-
-/// Entry point called from main with real stdout.
-pub fn run(backend: &dyn SecretBackend, profile: &str, secret_name: &str) -> Result<(), String> {
-    let mut output = io::stdout();
-    execute(backend, profile, secret_name, &mut output)
 }
