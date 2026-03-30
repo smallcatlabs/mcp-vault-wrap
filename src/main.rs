@@ -1,22 +1,9 @@
-// TODO: Remove once all modules are wired into command implementations.
-#![allow(dead_code)]
-
-mod cli;
-mod commands;
-mod config;
-mod host;
-mod inject;
-mod migrate;
-mod registry;
-mod relay;
-mod secret;
-mod transport;
-mod validate;
-
 use std::process;
 
 use clap::Parser;
-use cli::{Cli, Commands};
+use mcp_vault_wrap::cli::{Cli, Commands};
+use mcp_vault_wrap::commands;
+use mcp_vault_wrap::secret;
 
 fn create_backend() -> Box<dyn secret::SecretBackend> {
     #[cfg(target_os = "macos")]
@@ -30,16 +17,32 @@ fn create_backend() -> Box<dyn secret::SecretBackend> {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
         Commands::Run {
-            server_name: _,
-            config: _,
-            verbose: _,
+            server_name,
+            config,
+            verbose,
         } => {
-            todo!("run command")
+            let backend = create_backend();
+            match commands::run::run(&*backend, &server_name, config.as_deref(), verbose).await {
+                Ok(exit_code) => {
+                    if exit_code != 0 {
+                        eprintln!(
+                            "Error: Server \"{}\" exited with code {}",
+                            server_name, exit_code
+                        );
+                        process::exit(exit_code);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("{e}");
+                    process::exit(1);
+                }
+            }
         }
         Commands::Add {
             profile,
