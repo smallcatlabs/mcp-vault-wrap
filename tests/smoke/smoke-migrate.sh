@@ -10,8 +10,9 @@
 #
 # How it works:
 #   The migrate command resolves the host config path from $HOME via --host.
-#   This script creates a fake HOME directory structure and sets HOME to it,
-#   so we never touch your real Claude Desktop config.
+#   This script creates a fake HOME with a synthetic Claude Desktop config,
+#   so it works without Claude Desktop installed and never touches your
+#   real config.
 #
 # Prerequisites:
 #   - macOS with unlocked desktop session
@@ -24,9 +25,8 @@ set -euo pipefail
 
 BINARY="$(cd "$(dirname "${1:-target/release/mcp-vault-wrap}")" && pwd)/$(basename "${1:-target/release/mcp-vault-wrap}")"
 WORK_DIR=$(mktemp -d)
-REAL_CONFIG="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 
-# Set up fake HOME structure: $WORK_DIR/Library/Application Support/Claude/
+# Set up fake HOME with synthetic Claude Desktop config
 FAKE_HOME="$WORK_DIR/fakehome"
 FAKE_CLAUDE_DIR="$FAKE_HOME/Library/Application Support/Claude"
 FAKE_CONFIG="$FAKE_CLAUDE_DIR/claude_desktop_config.json"
@@ -83,13 +83,8 @@ if [ ! -x "$BINARY" ]; then
     exit 1
 fi
 
-# Populate the fake Claude Desktop config
-if [ -f "$REAL_CONFIG" ]; then
-    cp "$REAL_CONFIG" "$FAKE_CONFIG"
-    echo "  Copied real Claude Desktop config to fake HOME"
-else
-    echo "  Claude Desktop config not found — using synthetic config"
-    cat > "$FAKE_CONFIG" <<'TESTJSON'
+# Write synthetic Claude Desktop config with both registry servers
+cat > "$FAKE_CONFIG" <<'TESTJSON'
 {
   "mcpServers": {
     "github": {
@@ -110,28 +105,10 @@ else
   }
 }
 TESTJSON
-fi
-
+echo "  Created synthetic config with github + slack servers"
 echo ""
 
-# --- Determine which servers to migrate ---
-
-SERVERS_TO_MIGRATE=""
-for server in github slack; do
-    if grep -q "\"$server\"" "$FAKE_CONFIG"; then
-        if [ -n "$SERVERS_TO_MIGRATE" ]; then
-            SERVERS_TO_MIGRATE="${SERVERS_TO_MIGRATE},${server}"
-        else
-            SERVERS_TO_MIGRATE="$server"
-        fi
-    fi
-done
-
-if [ -z "$SERVERS_TO_MIGRATE" ]; then
-    echo "Error: No migratable servers (github, slack) found in config"
-    exit 1
-fi
-
+SERVERS_TO_MIGRATE="github,slack"
 echo "Servers to migrate: $SERVERS_TO_MIGRATE"
 echo ""
 
