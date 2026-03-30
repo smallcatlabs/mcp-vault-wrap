@@ -35,6 +35,10 @@ FAKE_RELAY="$FAKE_RELAY_DIR/relay.toml"
 
 mkdir -p "$FAKE_CLAUDE_DIR"
 
+# Symlink the real Keychains directory so macOS Security framework
+# can find the login keychain when HOME is overridden
+ln -s "$HOME/Library/Keychains" "$FAKE_HOME/Library/Keychains"
+
 PASS=0
 FAIL=0
 
