@@ -17,6 +17,11 @@
 
 set -euo pipefail
 
+# macOS doesn't ship GNU timeout; use perl alarm as a portable fallback
+if ! command -v timeout &>/dev/null; then
+    timeout() { perl -e 'alarm shift; exec @ARGV' -- "$@"; }
+fi
+
 BINARY="${1:-target/release/mcp-vault-wrap}"
 PROFILE="default"
 SECRET_NAME="SMOKE_TEST_TOKEN"
