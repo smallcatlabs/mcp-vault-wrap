@@ -85,7 +85,7 @@ For MVP, if a secret is expired, the downstream server returns an auth error, an
 ## 9. Supply Chain Security: Three Tiers
 
 ### From day one:
-- All dependencies pinned with exact versions, `Cargo.lock` committed
+- All dependencies pinned via committed `Cargo.lock` (the authoritative pin for this binary crate; `Cargo.toml` uses standard semver ranges)
 - CI pipeline: build, test, `cargo audit` on every PR
 - Signed git tags for releases
 
