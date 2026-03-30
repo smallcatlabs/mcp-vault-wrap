@@ -21,7 +21,7 @@ jobs:
           - target: aarch64-apple-darwin
             runner: macos-latest
           - target: x86_64-apple-darwin
-            runner: macos-latest
+            runner: macos-13
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +39,6 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Run tests
-        if: matrix.target == 'aarch64-apple-darwin'
         run: cargo test --release --target ${{ matrix.target }}
 
       - name: Package binary
@@ -80,20 +79,13 @@ jobs:
         run: cargo install cargo-cyclonedx
 
       - name: Generate SBOM
-        run: |
-          cargo cyclonedx --format json
-          # Find the generated SBOM (output path varies by cargo-cyclonedx version)
-          find . -name "*.cdx.json" -o -name "bom.json" | head -5
-          ls -la *.cdx.json bom.json 2>/dev/null || true
+        run: cargo cyclonedx --format json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: sbom
-          path: |
-            *.cdx.json
-            bom.json
-          if-no-files-found: warn
+          path: bom.json
 
   release:
     name: Create Release
@@ -112,12 +104,7 @@ jobs:
           mkdir -p release
           cp artifacts/mcp-vault-wrap-aarch64-apple-darwin/* release/
           cp artifacts/mcp-vault-wrap-x86_64-apple-darwin/* release/
-
-          # SBOM (filename varies by cargo-cyclonedx version)
-          find artifacts/sbom/ -type f 2>/dev/null | head -10
-          cp artifacts/sbom/*.cdx.json release/mcp-vault-wrap-sbom.cdx.json 2>/dev/null \
-            || cp artifacts/sbom/bom.json release/mcp-vault-wrap-sbom.cdx.json 2>/dev/null \
-            || echo "Warning: SBOM not found in artifacts"
+          cp artifacts/sbom/bom.json release/mcp-vault-wrap-sbom.cdx.json
 
           # Combined checksums file
           cd release
